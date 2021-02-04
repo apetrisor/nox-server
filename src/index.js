@@ -1,9 +1,9 @@
-const Server = require('./lib/server');
-const DBClient = require('./lib/dbclient');
+const Server = require('./core/server');
+const db = require('./core/db');
 
 let NOX = {};
 
-NOX.server = config => new Server(config);
-NOX.db = new DBClient();
+NOX.server = config => Server(config);
+NOX.db = db;
 
 module.exports = NOX;

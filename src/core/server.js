@@ -3,12 +3,16 @@ const polka = require('polka');
 const send = require('@polka/send-type');
 const compression = require('compression');
 
+const db = require('./db');
 const Settings = require('../models/settings');
 
-class Server {
-	constructor(config) {
-		this.config = config;
-		this.polka = polka()
+let config;
+let app;
+
+let Server = {
+	init: cfg => {
+		config = cfg;
+		app = polka()
 			// Add support for res.send
 			.use((req, res, next) => {
 				res.send = send.bind(null, res);
@@ -26,17 +30,25 @@ class Server {
 			})
 			.use(compression({threshold: 0}))
 			.use(sirv('static', {dev: config.env === 'development'}));
-	}
 
-	use(middleware) {
-		return this.polka.use(middleware);
-	}
+		return Server;
+	},
+	start: () => {
+		db.connect(config.mongoUrl)
+			.then(() => {
+				app.listen(config.port, err => {
+					if (err) console.error(err);
+				});
+			})
+			.catch(console.error);
+	},
+	use: middleware => {
+		return app.use(middleware);
+	},
+	stop: () => {
+		db.disconnect();
+		app.server.close();
+	},
+};
 
-	start() {
-		return this.polka.listen(this.config.port, err => {
-			if (err) console.error('error', err);
-		});
-	}
-}
-
-module.exports = Server;
+module.exports = cfg => Server.init(cfg);
