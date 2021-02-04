@@ -5,5 +5,15 @@
   "main": "src/index.js",
   "scripts": {},
   "author": "Alex Petrisor",
-  "license": "MIT"
+  "license": "MIT",
+  "bundleDependencies": true,
+  "dependencies": {
+    "@polka/send-type": "^0.5.2",
+    "compression": "^1.7.4",
+    "lru-cache": "^6.0.0",
+    "mongodb": "^3.6.4",
+    "nanoid": "^3.1.20",
+    "polka": "^0.5.2",
+    "sirv": "^1.0.11"
+  }
 }
