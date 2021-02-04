@@ -1,0 +1,9 @@
+{
+  "name": "nox-server",
+  "version": "0.1.0",
+  "description": "NOX (Node on Xanax) Server",
+  "main": "src/index.js",
+  "scripts": {},
+  "author": "Alex Petrisor",
+  "license": "MIT"
+}
