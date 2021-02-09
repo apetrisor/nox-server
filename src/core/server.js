@@ -1,54 +1,31 @@
-const sirv = require('sirv');
-const polka = require('polka');
-const send = require('@polka/send-type');
-const compression = require('compression');
-
 const db = require('./db');
+const webserver = require('../lib/webserver');
 const Settings = require('../models/settings');
 
-let config;
-let app;
-
-let Server = {
-	init: cfg => {
-		config = cfg;
-		app = polka()
-			// Add support for res.send
-			.use((req, res, next) => {
-				res.send = send.bind(null, res);
+function Server(config) {
+	let app = webserver.create(config);
+	// Get site settings and append to req
+	app.use((req, res, next) => {
+		Settings.get()
+			.then(settings => {
+				req.settings = settings;
+				req.clientSettings = Settings.getForClient(settings);
 				next();
 			})
-			// Get site settings and append to req
-			.use(async (req, res, next) => {
-				try {
-					req.settings = await Settings.get();
-					req.clientSettings = Settings.getForClient(req.settings);
-					next();
-				} catch (e) {
-					next(e);
-				}
-			})
-			.use(compression({threshold: 0}))
-			.use(sirv('static', {dev: config.env === 'development'}));
+			.catch(next);
+	});
 
-		return Server;
-	},
-	start: () => {
+	this.start = () => {
 		db.connect(config.mongoUrl)
-			.then(() => {
-				app.listen(config.port, err => {
-					if (err) console.error(err);
-				});
-			})
+			.then(() => app.start())
 			.catch(console.error);
-	},
-	use: middleware => {
-		return app.use(middleware);
-	},
-	stop: () => {
-		db.disconnect();
-		app.server.close();
-	},
-};
+	};
 
-module.exports = cfg => Server.init(cfg);
+	this.use = (...args) => app.use(...args);
+	this.stop = () => {
+		db.disconnect();
+		// app.server.close();
+	};
+}
+
+module.exports.create = config => new Server(config);
