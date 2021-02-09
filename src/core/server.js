@@ -1,5 +1,5 @@
 const db = require('./db');
-const webserver = require('../lib/webserver');
+const webserver = require('../lib/webserver2');
 const Settings = require('../models/settings');
 
 function Server(config) {
@@ -24,7 +24,7 @@ function Server(config) {
 	this.use = (...args) => app.use(...args);
 	this.stop = () => {
 		db.disconnect();
-		// app.server.close();
+		app.server.close();
 	};
 }
 

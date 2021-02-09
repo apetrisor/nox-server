@@ -8,6 +8,7 @@
   "license": "MIT",
   "bundleDependencies": true,
   "dependencies": {
+    "@polka/send-type": "^0.5.2",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",
@@ -16,6 +17,7 @@
     "mongodb": "^3.6.4",
     "morgan": "^1.10.0",
     "nanoid": "^3.1.20",
+    "polka": "^0.5.2",
     "serve-favicon": "^2.5.0",
     "sirv": "^1.0.11"
   }
