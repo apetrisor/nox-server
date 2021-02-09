@@ -21,17 +21,9 @@ class DBClient {
 	}
 
 	connect(url) {
-		return new Promise((fulfill, reject) => {
-			MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true})
-				.then(client => {
-					this.client = client;
-					this.db = client.db();
-					fulfill();
-				})
-				.catch(err => {
-					console.error(err);
-					reject();
-				});
+		return MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true}).then(client => {
+			this.client = client;
+			this.db = client.db();
 		});
 	}
 
