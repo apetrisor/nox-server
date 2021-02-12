@@ -1,4 +1,4 @@
-const db = require('./db');
+const Db = require('./db');
 const webserver = require('../lib/webserver2');
 const Settings = require('../models/settings');
 
@@ -16,14 +16,14 @@ function Server(config) {
 	});
 
 	this.start = () => {
-		db.connect(config.mongoUrl)
+		Db.connect(config.mongoUrl)
 			.then(() => app.start())
 			.catch(console.error);
 	};
 
 	this.use = (...args) => app.use(...args);
 	this.stop = () => {
-		db.disconnect();
+		Db.disconnect();
 		app.server.close();
 	};
 }
