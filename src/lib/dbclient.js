@@ -88,7 +88,10 @@ class DBClient {
 		else if (current > totalPages) current = totalPages;
 		let $skip = (current - 1) * pageSize;
 
-		let data = await collection.aggregate([searchStep, {$skip}, {$limit: pageSize}, {$project: projection}]).toArray();
+		let pipeline = [searchStep, {$skip}, {$limit: pageSize}];
+		// Only add projection stage if necessary
+		if (Object.keys(projection).length > 0) pipeline.push({$project: projection});
+		let data = await collection.aggregate(pipeline).toArray();
 
 		let pagination = {page: current, pages: totalPages, results: totalResults};
 		if (current > 1) pagination.prev = current - 1;
