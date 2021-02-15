@@ -12,10 +12,9 @@ Filters.makeQuery = (filters, query) => {
 				else if (value === '0') q[filter.name] = false;
 			} else {
 				let options = filter.options;
-				// If filter has parents use the correct options based on parent value
+				// If filter has parent concatenate all parent options
 				if (filter.parent) {
-					let parent = query[filter.parent];
-					options = options[parent] || [];
+					options = [].concat(...Object.values(options));
 				}
 
 				if (typeof value === 'string') {
