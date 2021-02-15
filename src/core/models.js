@@ -49,23 +49,39 @@ const Methods = {
 				}
 			}
 
+			if (config.process) {
+				item = await config.process(item);
+			}
+
 			return item;
 		};
 	},
 	paginate: (collection, config) => {
 		let projection = getProjection(config.projection);
-		return (query, page) => {
+		return async (query, page) => {
 			let {pageSize} = config;
 			let q = {...query, ...config.query};
-			return Db.paginate(collection, q, {page, projection, pageSize});
+			let data = await Db.paginate(collection, q, {page, projection, pageSize});
+
+			if (config.process) {
+				data = await config.process(data);
+			}
+
+			return data;
 		};
 	},
 	search: (collection, config) => {
 		let projection = getProjection(config.projection);
-		return (query, page) => {
+		return async (query, page) => {
 			let {path, pageSize} = config;
 			if (!path || !path.length) throw 'Missing path for search query';
-			return Db.search(collection, query, path, {page, projection, pageSize});
+			let data = await Db.search(collection, query, path, {page, projection, pageSize});
+
+			if (config.process) {
+				data = await config.process(data);
+			}
+
+			return data;
 		};
 	},
 	getMany: (collection, config) => {
@@ -76,8 +92,15 @@ const Methods = {
 			let q = {...query, ...config.query};
 
 			let fetch = () => Db.collection(collection).find(q, {projection}).limit(count).sort(sort).toArray();
-			if (cache) return cache.get({key: q, fetch});
-			else return fetch();
+			let item;
+			if (cache) item = await cache.get({key: q, fetch});
+			else item = await fetch();
+
+			if (config.process) {
+				item = await config.process(item);
+			}
+
+			return item;
 		};
 	},
 };
