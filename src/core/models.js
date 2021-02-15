@@ -26,11 +26,10 @@ const getCache = config => {
 const Methods = {
 	get: (collection, config) => {
 		let projection = getProjection(config.projection);
-		let cache = getCache(config.cache);
+		let cache = getCache(config);
 		return async function (query) {
 			let q = {...query, ...config.query};
 			let item;
-
 			if (config.stats) {
 				item = await Db.collection(collection).findOneAndUpdate(q, {$inc: {'stats.totalViews': 1, 'stats.monthlyViews': 1, 'stats.weeklyViews': 1}}, {projection});
 				item = item.value;
@@ -75,6 +74,7 @@ const Methods = {
 		return async query => {
 			let {count = 12, sort} = config;
 			let q = {...query, ...config.query};
+
 			let fetch = () => Db.collection(collection).find(q, {projection}).limit(count).sort(sort).toArray();
 			if (cache) return cache.get({key: q, fetch});
 			else return fetch();
