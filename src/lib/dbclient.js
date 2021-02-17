@@ -98,6 +98,45 @@ class DBClient {
 		if (current < totalPages) pagination.next = current + 1;
 		return {data, pagination};
 	}
+
+	/**
+	 * Full text search via Atlas $search but without pagination
+	 * @param {string} colName - collection name
+	 * @param {array<string>} query - search query - can be multiple terms
+	 * @param {array} path - what fields do we search in
+	 * @param {object} opts - search options
+	 * @param {array} opts.exclude - array of _ids for items to be excluded
+	 */
+	async searchBasic(colName, query, path, opts = {}) {
+		let projection = opts.projection || {};
+		let count = parseInt(opts.count) || 12;
+		let filter = opts.filter;
+		let {exclude = []} = opts;
+
+		let pipeline = [
+			{
+				$search: {
+					compound: {
+						should: query.map(token => ({text: {query: token, path, score: {constant: {value: 1}}, fuzzy: {maxEdits: 1}}})),
+					},
+				},
+			},
+		];
+
+		if (filter && typeof filter === 'object') {
+			pipeline[0].$search.compound.filter = Object.keys(filter).map(key => ({equals: {path: key, value: filter[key]}}));
+		}
+
+		if (exclude.length) {
+			pipeline.push({$match: {_id: {$nin: exclude}}});
+		}
+
+		pipeline.push({$limit: count});
+
+		// Only add projection stage if necessary
+		if (Object.keys(projection).length > 0) pipeline.push({$project: projection});
+		return this.collection(colName).aggregate(pipeline).toArray();
+	}
 }
 
 module.exports = DBClient;

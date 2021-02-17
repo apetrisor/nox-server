@@ -84,6 +84,22 @@ const Methods = {
 			return data;
 		};
 	},
+	searchBasic: (collection, config) => {
+		let projection = getProjection(config.projection);
+		return async (query, opts = {}) => {
+			let {exclude} = opts;
+			let {path, count, query: filter} = config;
+			if (!path || !path.length) throw 'Missing path for search query';
+
+			let data = await Db.searchBasic(collection, query, path, {projection, count, filter, exclude});
+
+			if (config.process) {
+				data = await config.process(data);
+			}
+
+			return data;
+		};
+	},
 	getMany: (collection, config) => {
 		let projection = getProjection(config.projection);
 		let cache = getCache(config);
