@@ -28,7 +28,7 @@ const Methods = {
 		let projection = getProjection(config.projection);
 		let cache = getCache(config);
 		return async query => {
-			let q = {...query, ...config.query};
+			let q = {...query, ...config.filter};
 			let item;
 			if (config.stats) {
 				item = await Db.collection(collection).findOneAndUpdate(q, {$inc: {'stats.totalViews': 1, 'stats.monthlyViews': 1, 'stats.weeklyViews': 1}}, {projection});
@@ -60,7 +60,7 @@ const Methods = {
 		let projection = getProjection(config.projection);
 		return async (query, page) => {
 			let {pageSize} = config;
-			let q = {...query, ...config.query};
+			let q = {...query, ...config.filter};
 			let data = await Db.paginate(collection, q, {page, projection, pageSize});
 
 			if (config.process) {
@@ -73,9 +73,9 @@ const Methods = {
 	search: (collection, config) => {
 		let projection = getProjection(config.projection);
 		return async (query, page) => {
-			let {path, pageSize, query: filter} = config;
+			let {path, pageSize, filter} = config;
 			if (!path || !path.length) throw 'Missing path for search query';
-			let data = await Db.search(collection, query, path, {page, projection, pageSize, filter});
+			let data = await Db.search(collection, query, path, {filter, projection, page, pageSize});
 
 			if (config.process) {
 				data = await config.process(data);
@@ -88,10 +88,10 @@ const Methods = {
 		let projection = getProjection(config.projection);
 		return async (query, opts = {}) => {
 			let {exclude} = opts;
-			let {path, count, query: filter} = config;
+			let {path, count, filter} = config;
 			if (!path || !path.length) throw 'Missing path for search query';
 
-			let data = await Db.searchBasic(collection, query, path, {projection, count, filter, exclude});
+			let data = await Db.searchBasic(collection, query, path, {filter, exclude, projection, count});
 
 			if (config.process) {
 				data = await config.process(data);
@@ -105,7 +105,7 @@ const Methods = {
 		let cache = getCache(config);
 		return async query => {
 			let {count = 12, sort} = config;
-			let q = {...query, ...config.query};
+			let q = {...query, ...config.filter};
 
 			let fetch = () => Db.collection(collection).find(q, {projection}).limit(count).sort(sort).toArray();
 			let item;
