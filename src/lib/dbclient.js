@@ -63,6 +63,7 @@ class DBClient {
 	async search(colName, query, path, opts = {}) {
 		let projection = opts.projection || {};
 		let pageSize = parseInt(opts.pageSize) || 12;
+		let {filter} = opts;
 		let collection = this.collection(colName);
 
 		// Split query by whitespace, then remove things with less then 3 chars
@@ -72,11 +73,13 @@ class DBClient {
 			$search: {
 				compound: {
 					must: tokens.map(token => ({text: {query: token, path, fuzzy: {maxEdits: 1}}})),
-					// TODO - make this part of API
-					filter: {equals: {path: 'enabled', value: true}},
 				},
 			},
 		};
+
+		if (filter) {
+			searchStep.$search.compound.filter = Object.keys(filter).map(key => ({equals: {path: key, value: filter[key]}}));
+		}
 
 		let count = await collection.aggregate([searchStep, {$count: 'count'}]).next();
 		if (!count) return {data: [], pagination: {pages: 0, results: 0}};
@@ -110,8 +113,7 @@ class DBClient {
 	async searchBasic(colName, query, path, opts = {}) {
 		let projection = opts.projection || {};
 		let count = parseInt(opts.count) || 12;
-		let filter = opts.filter;
-		let {exclude = []} = opts;
+		let {filter, exclude = []} = opts;
 
 		let pipeline = [
 			{
@@ -123,7 +125,7 @@ class DBClient {
 			},
 		];
 
-		if (filter && typeof filter === 'object') {
+		if (filter) {
 			pipeline[0].$search.compound.filter = Object.keys(filter).map(key => ({equals: {path: key, value: filter[key]}}));
 		}
 

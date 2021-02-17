@@ -27,7 +27,7 @@ const Methods = {
 	get: (collection, config) => {
 		let projection = getProjection(config.projection);
 		let cache = getCache(config);
-		return async function (query) {
+		return async query => {
 			let q = {...query, ...config.query};
 			let item;
 			if (config.stats) {
@@ -73,9 +73,9 @@ const Methods = {
 	search: (collection, config) => {
 		let projection = getProjection(config.projection);
 		return async (query, page) => {
-			let {path, pageSize} = config;
+			let {path, pageSize, query: filter} = config;
 			if (!path || !path.length) throw 'Missing path for search query';
-			let data = await Db.search(collection, query, path, {page, projection, pageSize});
+			let data = await Db.search(collection, query, path, {page, projection, pageSize, filter});
 
 			if (config.process) {
 				data = await config.process(data);
