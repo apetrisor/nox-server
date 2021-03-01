@@ -2,13 +2,7 @@ const {SitemapStream, streamToPromise} = require('sitemap');
 
 class Sitemap {
 	constructor(hostname) {
-		this.stream = new SitemapStream({
-			hostname,
-			xmlns: {
-				news: false,
-				video: false,
-			},
-		});
+		this.stream = new SitemapStream({hostname});
 	}
 
 	add(pages) {
