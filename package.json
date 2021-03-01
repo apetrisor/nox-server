@@ -1,6 +1,6 @@
 {
   "name": "@apetrisor/nox-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "NOX (Node on Xanax) Server",
   "main": "src/index.js",
   "scripts": {},
