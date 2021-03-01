@@ -4,6 +4,7 @@ const send = require('@polka/send-type');
 const compression = require('compression');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const axios = require('axios');
 // const favicon = require('serve-favicon');
 // const path = require('path');
 
@@ -52,42 +53,17 @@ function WebServer(config) {
 	app.use(bodyParser.raw({limit: '3000kb'}));
 	// Cache favicon
 	// app.use(favicon(path.resolve('./static/favicon.ico')));
+	// Sitemap
+	app.get('/sitemap.xml', async (req, res, next) => {
+		axios({method: 'GET', url: config.assetsUrl + 'sitemap.xml', responseType: 'stream'}).then(({data}) => data.pipe(res));
+	});
 	// Static files
 	app.use(sirv('static', {dev: config.env === 'development'}));
 
+	this.ignoreRoutes = ['/static', 'sitemap.xml'];
 	this.use = (...args) => app.use(...args);
-	this.use404 = f => (this.render404 = f);
 
 	this.start = function () {
-		// var notFound = (req, res, next) => {
-		// 	switch (req.accepts(['html', 'json'])) {
-		// 		case 'html':
-		// 			res.status(404);
-		// 			if (this.render404) this.render404(req, res, next);
-		// 			else res.send('404');
-		// 			break;
-		// 		case 'json':
-		// 			res.status(404).json({message: 'Resource not found'});
-		// 			break;
-		// 		default:
-		// 			res.status(404).end();
-		// 	}
-		// };
-
-		// app.use(notFound);
-
-		// // At the end, add error routes
-		// app.use((err, req, res, next) => {
-		// 	if (err.status === 404) return notFound(req, res, next);
-
-		// 	if (!err.message) {
-		// 		if (err.status === 404) err.message = 'Resource not found';
-		// 		else err.message = 'Something really bad happened! Our engineers will fix this asap!';
-		// 	}
-		// 	if (!err.status) err.status = 500;
-		// 	res.status(err.status).json({message: err.message});
-		// });
-
 		app.listen(config.port, function () {
 			console.log('Server started on port ' + config.port);
 		});

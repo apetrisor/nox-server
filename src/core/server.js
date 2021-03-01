@@ -21,6 +21,7 @@ function Server(config) {
 			.catch(console.error);
 	};
 
+	this.ignoreRoutes = app.ignoreRoutes;
 	this.use = (...args) => app.use(...args);
 	this.stop = () => {
 		Db.disconnect();
