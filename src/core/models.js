@@ -108,15 +108,32 @@ const Methods = {
 			let q = {...query, ...config.filter};
 
 			let fetch = () => Db.collection(collection).find(q, {projection}).limit(count).sort(sort).toArray();
-			let item;
-			if (cache) item = await cache.get({key: q, fetch});
-			else item = await fetch();
+			let items;
+			if (cache) items = await cache.get({key: q, fetch});
+			else items = await fetch();
 
 			if (config.process) {
-				item = await config.process(item);
+				items = await config.process(items);
 			}
 
-			return item;
+			return items;
+		};
+	},
+	count: (collection, config) => {
+		let cache = getCache(config);
+		return async query => {
+			let q = {...query, ...config.filter};
+
+			let fetch = () => Db.collection(collection).countDocuments(q);
+			let count;
+			if (cache) count = await cache.get({key: q, fetch});
+			else count = await fetch();
+
+			if (config.process) {
+				count = await config.process(count);
+			}
+
+			return count;
 		};
 	},
 };
