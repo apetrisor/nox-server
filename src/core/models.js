@@ -58,10 +58,10 @@ const Methods = {
 	},
 	paginate: (collection, config) => {
 		let projection = getProjection(config.projection);
-		return async (query, page) => {
+		return async (query, page, opts) => {
 			let {pageSize} = config;
 			let q = {...query, ...config.filter};
-			let data = await Db.paginate(collection, q, {page, projection, pageSize});
+			let data = await Db.paginate(collection, q, {page, projection, pageSize, ...opts});
 
 			if (config.process) {
 				data = await config.process(data);
