@@ -21,10 +21,15 @@ Filters.makeQuery = (filters, query, validate = true) => {
 					options = [].concat(...Object.values(options));
 				}
 
+				// Returns true if the value is present among the options
+				let findOption;
+				if (typeof options[0] === 'string') findOption = value => options.indexOf(value) !== -1;
+				else findOption = value => !!options.find(o => o.value === value);
+
 				if (typeof value === 'string') {
-					if (!validate || !!options.find(o => o.value === value)) q[filter.name] = value;
+					if (!validate || findOption(value)) q[filter.name] = value;
 				} else if (Array.isArray(value)) {
-					if (validate) value = value.filter(val => !!options.find(o => o.value === val));
+					if (validate) value = value.filter(findOption);
 					if (value.length === 1) {
 						q[filter.name] = value[0];
 					} else if (value.length > 1) {
