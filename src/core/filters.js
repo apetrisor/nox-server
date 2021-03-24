@@ -7,6 +7,8 @@ Filters.makeQuery = (filters, query, validate = true) => {
 	if (!Array.isArray(filters)) return q;
 
 	filters.forEach(filter => {
+		if (filter.ignore) return;
+
 		let value = query[filter.name];
 		if (value) {
 			if (filter.type === 'toggle') {
@@ -20,9 +22,9 @@ Filters.makeQuery = (filters, query, validate = true) => {
 				}
 
 				if (typeof value === 'string') {
-					if (!validate || options.indexOf(value) !== -1) q[filter.name] = value;
+					if (!validate || !!options.find(o => o.value === value)) q[filter.name] = value;
 				} else if (Array.isArray(value)) {
-					if (validate) value = value.filter(val => options.indexOf(val) !== -1);
+					if (validate) value = value.filter(val => !!options.find(o => o.value === val));
 					if (value.length === 1) {
 						q[filter.name] = value[0];
 					} else if (value.length > 1) {
