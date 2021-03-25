@@ -35,9 +35,11 @@ function WebServer(config) {
 		// });
 	}
 
-	// Add support for res.send
 	app.use((req, res, next) => {
+		// Add support for res.send
 		res.send = send.bind(null, res);
+		// Add cloudflare countrycode if available
+		req.countryCode = req.headers['CF-IPCountry'];
 		next();
 	});
 
