@@ -103,8 +103,8 @@ const Methods = {
 	getMany: (collection, config) => {
 		let projection = getProjection(config.projection);
 		let cache = getCache(config);
-		return async query => {
-			let {count = 12, sort} = config;
+		return async (query, opts) => {
+			let {count = 12, sort} = {...config, ...opts};
 			let q = {...query, ...config.filter};
 
 			let fetch = () => Db.collection(collection).find(q, {projection}).limit(count).sort(sort).toArray();
