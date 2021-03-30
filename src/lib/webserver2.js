@@ -1,6 +1,7 @@
 const sirv = require('sirv');
 const polka = require('polka');
 const send = require('@polka/send-type');
+const redirect = require('@polka/redirect');
 const compression = require('compression');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -38,6 +39,8 @@ function WebServer(config) {
 	app.use((req, res, next) => {
 		// Add support for res.send
 		res.send = send.bind(null, res);
+		// Add support for res.redirect
+		res.redirect = redirect.bind(null, res);
 		// Add cloudflare countrycode if available
 		req.countryCode = req.headers['cf-ipcountry'];
 		next();
