@@ -63,7 +63,7 @@ class DBClient {
 	async search(colName, query, path, opts = {}) {
 		let projection = opts.projection || {};
 		let pageSize = parseInt(opts.pageSize) || 12;
-		let {filter} = opts;
+		let {filter, index = 'default'} = opts;
 		let collection = this.collection(colName);
 
 		// Split query by whitespace, then remove things with less then 3 chars
@@ -71,6 +71,7 @@ class DBClient {
 
 		let searchStep = {
 			$search: {
+				index,
 				compound: {
 					must: tokens.map(token => ({text: {query: token, path, fuzzy: {maxEdits: 1}}})),
 				},
@@ -111,23 +112,69 @@ class DBClient {
 	 * @param {array} opts.exclude - array of _ids for items to be excluded
 	 */
 	async searchBasic(colName, query, path, opts = {}) {
-		let projection = opts.projection || {};
 		let count = parseInt(opts.count) || 12;
-		let {filter, exclude = []} = opts;
+		let {projection = {}, filter, exclude = [], index = 'default'} = opts;
 
-		let pipeline = [
-			{
-				$search: {
-					compound: {
-						should: query.map(token => ({text: {query: token, path, score: {constant: {value: 1}}, fuzzy: {maxEdits: 1}}})),
-					},
+		let searchStep = {
+			$search: {
+				index,
+				compound: {
+					should: query.map(token => ({text: {query: token, path, score: {constant: {value: 1}}, fuzzy: {maxEdits: 1}}})),
 				},
 			},
-		];
+		};
 
 		if (filter) {
-			pipeline[0].$search.compound.filter = Object.keys(filter).map(key => ({equals: {path: key, value: filter[key]}}));
+			searchStep.$search.compound.filter = Object.keys(filter).map(key => ({equals: {path: key, value: filter[key]}}));
 		}
+
+		let pipeline = [searchStep];
+
+		if (exclude.length) {
+			pipeline.push({$match: {_id: {$nin: exclude}}});
+		}
+
+		pipeline.push({$limit: count});
+
+		// Only add projection stage if necessary
+		if (Object.keys(projection).length > 0) pipeline.push({$project: projection});
+		return this.collection(colName).aggregate(pipeline).toArray();
+	}
+
+	/**
+	 * Full text autocomplete via Atlas $search
+	 * @param {string} colName - collection name
+	 * @param {string} query - search query
+	 * @param {string} path - what field do we search in
+	 * @param {object} opts - search options
+	 * @param {array} opts.exclude - array of _ids for items to be excluded
+	 */
+	async autocomplete(colName, query, path, opts = {}) {
+		let count = parseInt(opts.count) || 10;
+		let {projection = {}, filter, exclude = [], index = 'default'} = opts;
+
+		let searchStep = {
+			$search: {
+				index,
+				compound: {
+					must: [
+						{
+							autocomplete: {
+								query,
+								path,
+								fuzzy: {maxEdits: 1},
+							},
+						},
+					],
+				},
+			},
+		};
+
+		if (filter) {
+			searchStep.$search.compound.filter = Object.keys(filter).map(key => ({equals: {path: key, value: filter[key]}}));
+		}
+
+		let pipeline = [searchStep];
 
 		if (exclude.length) {
 			pipeline.push({$match: {_id: {$nin: exclude}}});

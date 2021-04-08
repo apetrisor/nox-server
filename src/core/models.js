@@ -73,9 +73,9 @@ const Methods = {
 	search: (collection, config) => {
 		let projection = getProjection(config.projection);
 		return async (query, page) => {
-			let {path, pageSize, filter} = config;
+			let {path, pageSize, filter, index} = config;
 			if (!path || !path.length) throw 'Missing path for search query';
-			let data = await Db.search(collection, query, path, {filter, projection, page, pageSize});
+			let data = await Db.search(collection, query, path, {index, filter, projection, page, pageSize});
 
 			if (config.process) {
 				data = await config.process(data);
@@ -88,10 +88,28 @@ const Methods = {
 		let projection = getProjection(config.projection);
 		return async (query, opts = {}) => {
 			let {exclude} = opts;
-			let {path, count, filter} = config;
+			let {path, count, filter, index} = config;
 			if (!path || !path.length) throw 'Missing path for search query';
 
-			let data = await Db.searchBasic(collection, query, path, {filter, exclude, projection, count});
+			let data = await Db.searchBasic(collection, query, path, {index, filter, exclude, projection, count});
+
+			if (config.process) {
+				data = await config.process(data);
+			}
+
+			return data;
+		};
+	},
+	autocomplete: (collection, config) => {
+		let projection = getProjection(config.projection);
+		return async (query, opts = {}) => {
+			if (!query) return [];
+
+			let {exclude} = opts;
+			let {path, count, filter, index} = config;
+			if (!path || !path.length) throw 'Missing path for search query';
+
+			let data = await Db.autocomplete(collection, query, path, {index, filter, exclude, projection, count});
 
 			if (config.process) {
 				data = await config.process(data);
