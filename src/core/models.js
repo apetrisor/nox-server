@@ -91,6 +91,11 @@ const Methods = {
 			let {path, count, filter, index} = config;
 			if (!path || !path.length) throw 'Missing path for search query';
 
+			if (!Array.isArray(query)) {
+				query = [query];
+			}
+			query = query.filter(item => !!item && typeof item === 'string');
+
 			let data = await Db.searchBasic(collection, query, path, {index, filter, exclude, projection, count});
 
 			if (config.process) {
