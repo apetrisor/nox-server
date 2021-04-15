@@ -115,6 +115,9 @@ class DBClient {
 		let count = parseInt(opts.count) || 12;
 		let {projection = {}, filter, exclude = [], index = 'default'} = opts;
 
+		// Allow for string queries
+		if (typeof query === 'string') query = [query];
+
 		let searchStep = {
 			$search: {
 				index,
