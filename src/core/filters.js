@@ -44,4 +44,4 @@ Filters.makeQuery = (filters, query, validate = true) => {
 	return q;
 };
 
-module.exports = Filters;
+export default Filters;

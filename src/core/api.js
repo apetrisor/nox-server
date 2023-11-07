@@ -12,4 +12,4 @@ Api.wrap = handler => {
 	};
 };
 
-module.exports = Api;
+export default Api;

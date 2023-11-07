@@ -1,5 +1,5 @@
-const DBClient = require('../lib/dbclient');
+import DBClient from '../lib/dbclient';
 
 const db = new DBClient();
 
-module.exports = db;
+export default db;

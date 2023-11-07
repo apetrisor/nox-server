@@ -1,23 +1,10 @@
-var mongodb = require('mongodb'),
-	MongoClient = mongodb.MongoClient,
-	ObjectID = mongodb.ObjectID,
-	nanoid = require('nanoid').nanoid;
+import {MongoClient, ObjectID} from 'mongodb';
 
 class DBClient {
 	getId(id, type) {
 		if (type === 'number') return parseFloat(id);
 		if (type === 'objectid') return new ObjectID(id);
 		return id;
-	}
-
-	async generateId(collection) {
-		var type = collection && collection.settings.idType;
-		if (type === 'number') {
-			let counter = await this.collection('counters').findOneAndUpdate({_id: collection.name}, {$inc: {seq: 1}}, {returnOriginal: false});
-			return counter.value.seq;
-		}
-		if (type === 'objectid') return new ObjectID();
-		return nanoid();
 	}
 
 	connect(url) {
@@ -188,4 +175,4 @@ class DBClient {
 	}
 }
 
-module.exports = DBClient;
+export default DBClient;

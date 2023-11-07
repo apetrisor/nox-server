@@ -1,4 +1,4 @@
-const {S3Client, PutObjectCommand, ListObjectsCommand, DeleteObjectsCommand, HeadBucketCommand} = require('@aws-sdk/client-s3');
+import {S3Client, PutObjectCommand, ListObjectsCommand, DeleteObjectsCommand, HeadBucketCommand} from '@aws-sdk/client-s3';
 
 class S3 {
 	init(config) {
@@ -68,4 +68,4 @@ class S3 {
 	}
 }
 
-module.exports = S3;
+export default S3;

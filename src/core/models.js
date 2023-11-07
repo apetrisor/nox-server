@@ -1,5 +1,6 @@
-const Db = require('./db');
-const LRU = require('lru-cache');
+
+import Db from './db';
+import {LRUCache} from 'lru-cache';
 
 const getProjection = (proj = []) => Object.fromEntries(proj.map(key => [key, 1]));
 const getCache = config => {
@@ -173,4 +174,4 @@ const Models = {
 	},
 };
 
-module.exports = Models;
+export default Models;
