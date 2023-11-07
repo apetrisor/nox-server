@@ -8,8 +8,8 @@ const getCache = config => {
 		// Default max items 100
 		let max = config.cache.count || 100;
 		// Default age 1 hour
-		let maxAge = 1000 * 60 * (config.cache.time || 60);
-		let cache = new LRU({max, maxAge});
+		let ttl = 1000 * 60 * (config.cache.time || 60);
+		let cache = new LRUCache({max, ttl});
 		return {
 			get: async opts => {
 				let cacheKey = JSON.stringify(opts.key);
@@ -33,7 +33,6 @@ const Methods = {
 			let item;
 			if (config.stats) {
 				item = await Db.collection(collection).findOneAndUpdate(q, {$inc: {'stats.totalViews': 1, 'stats.monthlyViews': 1, 'stats.weeklyViews': 1}}, {projection});
-				item = item.value;
 			} else {
 				let fetch = () => Db.collection(collection).findOne(q, {projection});
 				if (cache) item = await cache.get({key: q, fetch});
@@ -59,7 +58,7 @@ const Methods = {
 	},
 	paginate: (collection, config) => {
 		let projection = getProjection(config.projection);
-		return async (query, page, opts) => {
+		return async (query, page, opts = {}) => {
 			let {pageSize} = config;
 			let q = {...query, ...config.filter};
 			let data = await Db.paginate(collection, q, {page, projection, pageSize, ...opts});
@@ -73,7 +72,7 @@ const Methods = {
 	},
 	search: (collection, config) => {
 		let projection = getProjection(config.projection);
-		return async (query, page) => {
+		return async (query, page, opts = {}) => {
 			let {path, pageSize, filter, index} = config;
 			if (!path || !path.length) throw 'Missing path for search query';
 			let data = await Db.search(collection, query, path, {index, filter, projection, page, pageSize});

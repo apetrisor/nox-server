@@ -8,7 +8,7 @@ class DBClient {
 	}
 
 	connect(url) {
-		return MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true}).then(client => {
+		return MongoClient.connect(url).then(client => {
 			this.client = client;
 			this.db = client.db();
 		});
@@ -47,7 +47,7 @@ class DBClient {
 	}
 
 	// Full text search via the MongoDB Atlas $search aggregation pipeline
-	async search(colName, query, path, opts = {}) {
+	async search(colName, query = '', path, opts = {}) {
 		let projection = opts.projection || {};
 		let pageSize = parseInt(opts.pageSize) || 12;
 		let {filter, index = 'default'} = opts;
@@ -66,7 +66,13 @@ class DBClient {
 		};
 
 		if (filter) {
-			searchStep.$search.compound.filter = Object.keys(filter).map(key => ({equals: {path: key, value: filter[key]}}));
+			searchStep.$search.compound.filter = Object.keys(filter).map(key => {
+				if (typeof filter[key] === 'string') {
+					return {text: {path: key, query: filter[key]}};
+				} else {
+					return {equals: {path: key, value: filter[key]}};
+				}
+			});
 		}
 
 		let count = await collection.aggregate([searchStep, {$count: 'count'}]).next();
