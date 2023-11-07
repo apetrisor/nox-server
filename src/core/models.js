@@ -75,6 +75,11 @@ const Methods = {
 		return async (query, page, opts = {}) => {
 			let {path, pageSize, filter, index} = config;
 			if (!path || !path.length) throw 'Missing path for search query';
+
+			let {filter: filterOverride} = opts;
+			// Add filter override via options
+			filter = {...filter, ...filterOverride};
+
 			let data = await Db.search(collection, query, path, {index, filter, projection, page, pageSize});
 
 			if (config.process) {
@@ -87,9 +92,12 @@ const Methods = {
 	searchBasic: (collection, config) => {
 		let projection = getProjection(config.projection);
 		return async (query, opts = {}) => {
-			let {exclude} = opts;
 			let {path, count, filter, index} = config;
 			if (!path || !path.length) throw 'Missing path for search query';
+
+			let {exclude, filter: filterOverride} = opts;
+			// Add filter override via options
+			filter = {...filter, ...filterOverride};
 
 			if (!Array.isArray(query)) {
 				query = [query];
@@ -110,9 +118,12 @@ const Methods = {
 		return async (query, opts = {}) => {
 			if (!query) return [];
 
-			let {exclude} = opts;
 			let {path, count, filter, index} = config;
 			if (!path || !path.length) throw 'Missing path for search query';
+
+			let {exclude, filter: filterOverride} = opts;
+			// Add filter override via options
+			filter = {...filter, ...filterOverride};
 
 			let data = await Db.autocomplete(collection, query, path, {index, filter, exclude, projection, count});
 
