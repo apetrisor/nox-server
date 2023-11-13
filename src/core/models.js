@@ -1,5 +1,5 @@
 
-import Db from './db';
+import Db from './db.js';
 import {LRUCache} from 'lru-cache';
 
 const getProjection = (proj = []) => Object.fromEntries(proj.map(key => [key, 1]));

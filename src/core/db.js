@@ -1,4 +1,4 @@
-import DBClient from '../lib/dbclient';
+import DBClient from '../lib/dbclient.js';
 
 const db = new DBClient();
 
