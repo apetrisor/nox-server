@@ -8,9 +8,8 @@
   "author": "Alex Petrisor",
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.430.0",
-    "lru-cache": "^10.0.1",
-    "mongodb": "^6.2.0",
-    "sitemap": "^6.4.0"
+    "@aws-sdk/client-s3": "^3.449.0",
+    "lru-cache": "^10.0.2",
+    "mongodb": "^6.2.0"
   }
 }
