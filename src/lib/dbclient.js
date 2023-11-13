@@ -1,4 +1,5 @@
-import {MongoClient, ObjectID} from 'mongodb';
+import mongo from 'mongodb';
+const {MongoClient, ObjectID} = mongo;
 
 class DBClient {
 	getId(id, type) {
