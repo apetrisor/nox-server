@@ -2,7 +2,15 @@
 import Db from './db.js';
 import {LRUCache} from 'lru-cache';
 
-const getProjection = (proj = []) => Object.fromEntries(proj.map(key => [key, 1]));
+const getProjection = (proj = []) => {
+	let projection = {};
+	proj.forEach(key => {
+		if (typeof key === 'string') projection[key] = 1;
+		else if (typeof key==='object') Object.keys(key).forEach(k => projection[k] = key[k]);
+	});
+	return projection;
+};
+
 const getCache = config => {
 	if (config.cache && !config.stats) {
 		// Default max items 100
@@ -25,6 +33,7 @@ const getCache = config => {
 };
 
 const Methods = {
+	// Get one item
 	get: (collection, config) => {
 		let projection = getProjection(config.projection);
 		let cache = getCache(config);
@@ -56,6 +65,7 @@ const Methods = {
 			return item;
 		};
 	},
+	// Get multiple items with pagination
 	paginate: (collection, config) => {
 		let projection = getProjection(config.projection);
 		return async (query, page, opts = {}) => {
@@ -70,6 +80,7 @@ const Methods = {
 			return data;
 		};
 	},
+	// Search with pagination
 	search: (collection, config) => {
 		let projection = getProjection(config.projection);
 		return async (query, page, opts = {}) => {
@@ -134,6 +145,7 @@ const Methods = {
 			return data;
 		};
 	},
+	// Get multiple items without pagination
 	getMany: (collection, config) => {
 		let projection = getProjection(config.projection);
 		let cache = getCache(config);
@@ -153,6 +165,7 @@ const Methods = {
 			return items;
 		};
 	},
+	// Count results
 	count: (collection, config) => {
 		let cache = getCache(config);
 		return async query => {
