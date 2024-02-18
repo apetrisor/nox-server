@@ -54,6 +54,8 @@ class DBClient {
 		let {filter, index = 'default'} = opts;
 		let collection = this.collection(colName);
 
+		if (typeof query !== 'string') throw 'Search query must be a string';
+
 		// Split query by whitespace, then remove things with less then 3 chars
 		let tokens = query.split(/\s+/).filter(token => token.length > 2);
 
