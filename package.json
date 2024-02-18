@@ -9,6 +9,7 @@
   "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.449.0",
+    "@aws-sdk/s3-request-presigner": "^3.478.0",
     "lru-cache": "^10.0.2",
     "mongodb": "^6.2.0"
   }

@@ -1,4 +1,5 @@
 import {S3Client, PutObjectCommand, ListObjectsCommand, DeleteObjectsCommand, HeadBucketCommand} from '@aws-sdk/client-s3';
+import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
 
 class S3 {
 	init(config) {
@@ -62,6 +63,21 @@ class S3 {
 				Bucket: this.bucket,
 			});
 			return this.client.send(command);
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	async getSignedUploadUrl({bucket, key, contentType, expires, acl}) {
+		try {
+			const command = new PutObjectCommand({
+				Bucket: bucket || this.bucket,
+				Key: key,
+				ContentType: contentType,
+				ACL: acl,
+			});
+
+			return getSignedUrl(this.client, command, {expiresIn: expires});
 		} catch (err) {
 			console.error(err);
 		}
