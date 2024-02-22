@@ -23,10 +23,10 @@ class DBClient {
 		return this.db.collection(name);
 	}
 
-	async paginate(colName, query, opts) {
-		var projection = (opts && opts.projection) || {},
-			pageSize = (opts && parseInt(opts.pageSize)) || 50,
-			sort = (opts && opts.sort) || {_id: 1};
+	async paginate(colName, query, opts = {}) {
+		var projection = opts.projection || {},
+			pageSize = parseInt(opts.pageSize) || 50,
+			sort = opts.sort || {_id: 1};
 
 		var collection = this.collection(colName);
 		var totalResults = await collection.countDocuments(query);
@@ -65,6 +65,9 @@ class DBClient {
 				compound: {
 					must: tokens.map(token => ({text: {query: token, path, fuzzy: {maxEdits: 1}}})),
 				},
+				count: {
+					type: 'total',
+				},
 			},
 		};
 
@@ -78,25 +81,32 @@ class DBClient {
 			});
 		}
 
-		let count = await collection.aggregate([searchStep, {$count: 'count'}]).next();
-		if (!count) return {data: [], pagination: {pages: 0, results: 0}};
-		let totalResults = count.count;
-
-		let totalPages = Math.ceil(totalResults / pageSize);
 		let current = opts.page && parseInt(opts.page);
 		if (isNaN(current) || current < 1) current = 1;
-		else if (current > totalPages) current = totalPages;
 		let $skip = (current - 1) * pageSize;
 
 		let pipeline = [searchStep, {$skip}, {$limit: pageSize}];
 		// Only add projection stage if necessary
 		if (Object.keys(projection).length > 0) pipeline.push({$project: projection});
-		let data = await collection.aggregate(pipeline).toArray();
-
-		let pagination = {page: current, pages: totalPages, results: totalResults};
+		// Add facet stage
+		pipeline.push(
+			{
+				$facet: {
+					docs: [],
+					count: [{$replaceWith: '$$SEARCH_META.count'}, {$limit: 1}],
+				},
+			},
+			{$unwind: '$count'}
+		);
+		let data = await collection.aggregate(pipeline).next();
+		if (!data) return {data: [], pagination: {pages: 0, results: 0}};
+		
+		let {docs, count} = data;
+		let totalPages = Math.ceil(count.total / pageSize);
+		let pagination = {page: current, pages: totalPages, results: count.total};
 		if (current > 1) pagination.prev = current - 1;
 		if (current < totalPages) pagination.next = current + 1;
-		return {data, pagination};
+		return {data: docs, pagination};
 	}
 
 	/**
