@@ -26,7 +26,7 @@ class DBClient {
 	async paginate(colName, query, opts) {
 		var projection = (opts && opts.projection) || {},
 			pageSize = (opts && parseInt(opts.pageSize)) || 50,
-			sort = (opts && opts.sort) || {createdAt: -1};
+			sort = (opts && opts.sort) || {_id: 1};
 
 		var collection = this.collection(colName);
 		var totalResults = await collection.countDocuments(query);
